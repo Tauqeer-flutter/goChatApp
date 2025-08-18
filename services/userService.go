@@ -30,7 +30,14 @@ func (u UserService) SignUp(user *domain.User) error {
 }
 
 func (u UserService) Login(email string, password string) (*domain.User, error) {
-	return nil, nil
+	user, err := u.userRepository.GetByEmail(email)
+	if err != nil || user == nil {
+		return nil, domain.ErrInvalidCredentials
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return nil, domain.ErrInvalidCredentials
+	}
+	return user, nil
 }
 
 func (u UserService) GenerateJWT(user *domain.User) (string, error) {
