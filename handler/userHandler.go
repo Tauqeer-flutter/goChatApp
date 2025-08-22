@@ -24,10 +24,11 @@ func SetupUserRoutes(router *gin.RouterGroup, userService domain.UserServiceInte
 func (h *UserHandler) SignUp(c *gin.Context) {
 	var request requests.SignUpRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, responses.BaseResponse{
-			Success: false,
-			Message: err.Error(),
-		})
+		//c.JSON(http.StatusBadRequest, responses.BaseResponse{
+		//	Success: false,
+		//	Message: err.Error(),
+		//})
+		responses.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	user := domain.User{
@@ -40,60 +41,63 @@ func (h *UserHandler) SignUp(c *gin.Context) {
 	}
 	err := h.userService.SignUp(&user)
 	if err != nil {
-		c.JSON(500, responses.BaseResponse{
-			Success: false,
-			Message: err.Error(),
-		})
+		responses.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	token, err := h.userService.GenerateJWT(&user)
 	if err != nil {
-		c.JSON(500, responses.BaseResponse{
-			Success: false,
-			Message: err.Error(),
-		})
+		//c.JSON(500, responses.BaseResponse{
+		//	Success: false,
+		//	Message: err.Error(),
+		//})
+		responses.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	user.Password = ""
-	c.JSON(200, responses.SuccessAuthResponse{
-		Success:     true,
-		Message:     "User created successfully",
-		AccessToken: token,
+	responses.SuccessResponse(c, http.StatusOK, "User created successfully", responses.AuthResponse{
 		User:        user,
+		AccessToken: token,
 	})
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
 	var request requests.LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, responses.BaseResponse{
-			Success: false,
-			Message: err.Error(),
-		})
+		//c.JSON(http.StatusBadRequest, responses.BaseResponse{
+		//	Success: false,
+		//	Message: err.Error(),
+		//})
+		responses.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	user, err := h.userService.Login(request.Email, request.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, responses.BaseResponse{
-			Success: false,
-			Message: err.Error(),
-		})
+		//c.JSON(http.StatusUnauthorized, responses.BaseResponse{
+		//	Success: false,
+		//	Message: err.Error(),
+		//})
+		responses.ErrorResponse(c, http.StatusUnauthorized, err.Error())
 		return
 	}
 	token, err := h.userService.GenerateJWT(user)
 	if err != nil {
-		c.JSON(500, responses.BaseResponse{
-			Success: false,
-			Message: err.Error(),
-		})
+		//c.JSON(500, responses.BaseResponse{
+		//	Success: false,
+		//	Message: err.Error(),
+		//})
+		responses.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	user.Password = ""
-	c.JSON(200, responses.SuccessAuthResponse{
-		Success:     true,
-		Message:     "Login successful",
-		AccessToken: token,
+	//c.JSON(200, responses.SuccessAuthResponse{
+	//	Success:     true,
+	//	Message:     "Login successful",
+	//	AccessToken: token,
+	//	User:        *user,
+	//})
+	responses.SuccessResponse(c, http.StatusOK, "Login Successful", responses.AuthResponse{
 		User:        *user,
+		AccessToken: token,
 	})
 }
 
