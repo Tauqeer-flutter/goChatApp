@@ -1,12 +1,13 @@
 package container
 
 import (
-	"github.com/gin-gonic/gin"
 	"goChatApp/config"
 	"goChatApp/domain"
 	"goChatApp/handler/routes"
 	"goChatApp/repositories"
 	"goChatApp/services"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Container struct {
@@ -14,6 +15,7 @@ type Container struct {
 	UserService    domain.UserServiceInterface
 	UserRepository domain.UserRepositoryInterface
 	GroupService   domain.GroupServiceInterface
+	ChatService    domain.ChatServiceInterface
 }
 
 func (c *Container) SetupRoutes(router *gin.Engine) {
