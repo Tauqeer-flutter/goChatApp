@@ -30,7 +30,7 @@ type User struct {
 type UserRepositoryInterface interface {
 	Create(user *User) error
 	Update(user *User) error
-	GetById(id string) (*User, error)
+	GetById(id int64) (*User, error)
 	GetByEmail(email string) (*User, error)
 	CheckUserExists(email string) (bool, error)
 	List() ([]*User, error)

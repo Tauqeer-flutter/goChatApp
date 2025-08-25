@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"goChatApp/handler/responses"
@@ -11,10 +12,10 @@ import (
 )
 
 type JWTClaims struct {
-	UserId  string    `json:"user_id"`
-	Email   string    `json:"email"`
-	Expiry  time.Time `json:"expiry"`
-	Created time.Time `json:"created"`
+	UserId  int64  `json:"user_id"`
+	Email   string `json:"email"`
+	Expiry  int64  `json:"expiry"`
+	Created int64  `json:"created"`
 	jwt.RegisteredClaims
 }
 
@@ -25,7 +26,7 @@ func AuthMiddleware(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	tokenString := strings.Trim(authHeader, "Bearer ")
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
@@ -33,6 +34,7 @@ func AuthMiddleware(c *gin.Context) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {
+		fmt.Println(err)
 		responses.ErrorResponse(c, http.StatusUnauthorized, "Invalid token")
 		c.Abort()
 		return
@@ -43,7 +45,8 @@ func AuthMiddleware(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	if time.Now().After(claims.Expiry) {
+	expiry := time.Unix(claims.Expiry, 0)
+	if time.Now().After(expiry) {
 		responses.ErrorResponse(c, http.StatusUnauthorized, "Token expired")
 		c.Abort()
 		return

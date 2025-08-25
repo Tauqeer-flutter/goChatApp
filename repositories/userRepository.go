@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"goChatApp/domain"
+
 	"gorm.io/gorm"
 )
 
@@ -19,9 +20,13 @@ func (u userRepository) Update(user *domain.User) error {
 	panic("implement me")
 }
 
-func (u userRepository) GetById(id string) (*domain.User, error) {
-	//TODO implement me
-	panic("implement me")
+func (u userRepository) GetById(id int64) (*domain.User, error) {
+	var user domain.User
+	err := u.db.Raw("SELECT * FROM go_chat_app.users WHERE id = ?", id).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (u userRepository) GetByEmail(email string) (*domain.User, error) {

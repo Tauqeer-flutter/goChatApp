@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/golang-jwt/jwt/v5"
 	"goChatApp/domain"
+	"goChatApp/middlewares"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"time"
@@ -42,11 +43,11 @@ func (u UserService) Login(email string, password string) (*domain.User, error) 
 
 func (u UserService) GenerateJWT(user *domain.User) (string, error) {
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
-	claims := jwt.MapClaims{
-		"user_id": user.Id,
-		"email":   user.Email,
-		"expiry":  time.Now().Add(time.Hour).Unix(),
-		"created": time.Now().Unix(),
+	claims := middlewares.JWTClaims{
+		UserId:  user.Id,
+		Email:   user.Email,
+		Expiry:  time.Now().Add(time.Hour).Unix(),
+		Created: time.Now().Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	tokenString, err := token.SignedString(jwtSecret)
