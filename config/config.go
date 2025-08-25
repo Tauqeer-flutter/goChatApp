@@ -1,12 +1,13 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"goChatApp/domain"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 	"log"
 	"os"
+
+	"github.com/joho/godotenv"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type Config struct {
@@ -44,7 +45,7 @@ func connectDb() (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = db.AutoMigrate(&domain.User{}, &domain.Group{}, &domain.Member{})
+	err = db.AutoMigrate(&domain.User{}, &domain.Group{}, &domain.Member{}, &domain.Chat{})
 	if err != nil {
 		return nil, err
 	}
