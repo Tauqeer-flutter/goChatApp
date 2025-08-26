@@ -2,7 +2,11 @@ package domain
 
 import (
 	"goChatApp/handler/requests"
+	"net/http"
+	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type Chat struct {
@@ -13,6 +17,16 @@ type Chat struct {
 	ReferenceTo *int64    `json:"reference_to"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+var Upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }}
+var Mutex sync.Mutex
+var Clients = make(map[*Client]int64)
+
+type Client struct {
+	UserId int64
+	Active bool
+	Conn   *websocket.Conn
 }
 
 type ChatRepositoryInterface interface {
