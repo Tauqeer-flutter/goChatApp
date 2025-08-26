@@ -27,6 +27,7 @@ func SetupGroupRoutes(e *gin.RouterGroup, service domain.GroupServiceInterface) 
 	groups := e.Group("/groups", middlewares.AuthMiddleware)
 	{
 		groups.POST("/create", handler.Create)
+		groups.GET("/list", handler.List)
 	}
 }
 
@@ -65,4 +66,18 @@ func (h GroupHandler) Create(c *gin.Context) {
 		return
 	}
 	responses.SuccessResponse(c, http.StatusOK, "Group created!", createdGroup)
+}
+
+func (h GroupHandler) List(c *gin.Context) {
+	userId, exists := c.Get("user_id")
+	if !exists {
+		responses.ErrorResponse(c, http.StatusUnauthorized, "User not found in context")
+		return
+	}
+	groups, err := h.groupService.List(userId.(int64))
+	if err != nil {
+		responses.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	responses.SuccessResponse(c, http.StatusOK, "Fetched groups!", groups)
 }

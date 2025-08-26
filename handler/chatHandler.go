@@ -5,7 +5,6 @@ import (
 	"goChatApp/handler/requests"
 	"goChatApp/handler/responses"
 	"goChatApp/middlewares"
-	"goChatApp/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +30,6 @@ func (ch ChatHandler) SendMessage(c *gin.Context) {
 	}
 	err := (*ch.chatService).SendMessage(&request)
 	if err != nil {
-		return utils.Must(c, http.StatusInternalServerError, err)
 		responses.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}

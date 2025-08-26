@@ -21,12 +21,16 @@ type Member struct {
 	User      User      `gorm:"foreignKey:MemberId" json:"-"`
 }
 
+//type
+
 type GroupRepositoryInterface interface {
 	Create(group *Group) (int64, error)
+	List(userId int64) ([]*Group, error)
 	CreateMember(member *Member) error
 	GetGroupById(groupId *int64) (*Group, error)
 }
 
 type GroupServiceInterface interface {
 	Create(group *Group, currentUserId *int64, otherUserId *int64) (*Group, error)
+	List(currentUserId int64) ([]*Group, error)
 }

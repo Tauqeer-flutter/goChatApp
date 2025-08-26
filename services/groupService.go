@@ -43,6 +43,10 @@ func (g GroupService) Create(group *domain.Group, currentUserId *int64, otherUse
 	return createdGroup, nil
 }
 
+func (g GroupService) List(userId int64) ([]*domain.Group, error) {
+	return g.repository.List(userId)
+}
+
 func NewGroupService(repository domain.GroupRepositoryInterface, userRepository domain.UserRepositoryInterface) *GroupService {
 	return &GroupService{
 		repository:     repository,

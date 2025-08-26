@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"goChatApp/domain"
 
 	"gorm.io/gorm"
@@ -17,6 +18,27 @@ func (g groupRepository) Create(group *domain.Group) (int64, error) {
 		return -1, err
 	}
 	return newGroup.Id, nil
+}
+
+func (g groupRepository) List(userId int64) ([]*domain.Group, error) {
+	var groups []*domain.Group
+	var members []domain.Member
+	err := g.Db.Raw("SELECT m.*, g.id, g.name, g.description, g.group_type, g.member_count FROM go_chat_app.members m JOIN go_chat_app.groups g ON g.id = group_id WHERE m.member_id = ? ORDER BY m.updated_at DESC;", userId).Scan(&groups).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, group := range groups {
+		id := group.Id
+		fmt.Println("id: ", id)
+		err = g.Db.Table("members").Where("group_id = ?;", group.Id).Scan(&members).Error
+		if err != nil {
+			fmt.Println("Error fetching members for group: ", id, err)
+			continue
+		}
+		group.MemberCount = len(members)
+		group.Members = members
+	}
+	return groups, nil
 }
 
 func (g groupRepository) CreateMember(member *domain.Member) error {
