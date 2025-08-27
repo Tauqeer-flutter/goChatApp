@@ -6,6 +6,7 @@ import (
 	"goChatApp/handler/requests"
 	"goChatApp/handler/responses"
 	"goChatApp/middlewares"
+	"goChatApp/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -51,6 +52,12 @@ func (ch ChatHandler) ChatWS(c *gin.Context) {
 		responses.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+	service := (*ch.chatService).(*services.ChatService)
+	_, err := service.GroupRepository.GetGroupById(&request.GroupId)
+	if err != nil {
+		responses.ErrorResponse(c, http.StatusBadRequest, "Group not found")
+		return
+	}
 	ws, err := domain.Upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		responses.ErrorResponse(c, http.StatusInternalServerError, err.Error())
@@ -75,9 +82,32 @@ func (ch ChatHandler) ChatWS(c *gin.Context) {
 		}
 		message := string(bytes)
 		fmt.Println(message)
+		messageRequest := requests.SendMessageRequest{
+			SenderId: userId.(int64),
+			GroupId:  &request.GroupId,
+			Message:  message,
+		}
+		err = (*ch.chatService).SendMessage(&messageRequest)
+		if err != nil {
+			err := ws.WriteJSON(responses.BaseResponse{
+				Success: false,
+				Message: err.Error(),
+			})
+			if err != nil {
+				domain.Mutex.Lock()
+				delete(domain.Clients, &client)
+				domain.Mutex.Unlock()
+				break
+			}
+			continue
+		}
 		for allClient, groupId := range domain.Clients {
 			if groupId == request.GroupId {
-				err := allClient.Conn.WriteMessage(1, bytes)
+				err := allClient.Conn.WriteJSON(responses.Response{
+					Status:  true,
+					Message: "New message received",
+					Data:    messageRequest,
+				})
 				if err != nil {
 					domain.Mutex.Lock()
 					delete(domain.Clients, allClient)
