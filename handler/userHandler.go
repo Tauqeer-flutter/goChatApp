@@ -2,7 +2,7 @@ package handler
 
 import (
 	"goChatApp/domain"
-	"goChatApp/handler/requests"
+	"goChatApp/handler/requests/auth"
 	"goChatApp/handler/responses"
 	"goChatApp/middlewares"
 	"net/http"
@@ -25,7 +25,7 @@ func SetupUserRoutes(router *gin.RouterGroup, userService domain.UserServiceInte
 }
 
 func (h *UserHandler) SignUp(c *gin.Context) {
-	var request requests.SignUpRequest
+	var request auth.SignUpRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		//c.JSON(http.StatusBadRequest, responses.BaseResponse{
 		//	Success: false,
@@ -64,7 +64,7 @@ func (h *UserHandler) SignUp(c *gin.Context) {
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
-	var request requests.LoginRequest
+	var request auth.LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		//c.JSON(http.StatusBadRequest, responses.BaseResponse{
 		//	Success: false,
@@ -110,12 +110,26 @@ func (h *UserHandler) List(c *gin.Context) {
 		responses.ErrorResponse(c, http.StatusUnauthorized, "User not found in context")
 		return
 	}
-	users, err := h.userService.List(userId.(int64))
+	users, err := h.userService.List()
 	if err != nil {
 		responses.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	responses.SuccessResponse(c, http.StatusOK, "Fetched users!", users)
+	filteredUsers := make([]*responses.UserResponse, 0)
+	for _, user := range users {
+		if user.Id != userId {
+			newUser := &responses.UserResponse{
+				Id:        user.Id,
+				FirstName: user.FirstName,
+				LastName:  user.LastName,
+				Email:     user.Email,
+				PhotoUrl:  user.PhotoUrl,
+				Phone:     user.Phone,
+			}
+			filteredUsers = append(filteredUsers, newUser)
+		}
+	}
+	responses.SuccessResponse(c, http.StatusOK, "Fetched users!", filteredUsers)
 }
 
 func NewUserHandler(userService domain.UserServiceInterface) *UserHandler {

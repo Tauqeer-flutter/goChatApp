@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"goChatApp/domain"
-	"goChatApp/handler/requests"
+	"goChatApp/handler/requests/chat"
 	"goChatApp/handler/responses"
 	"goChatApp/middlewares"
 	"goChatApp/services"
@@ -20,24 +20,39 @@ func SetupChatRoutes(router *gin.RouterGroup, service *domain.ChatServiceInterfa
 	handler := NewChatHandler(service)
 	routerGroup := router.Group("/chats", middlewares.AuthMiddleware)
 	{
-		routerGroup.POST("/send-message", handler.SendMessage)
+		//routerGroup.POST("/send-message", handler.SendMessage)
+		routerGroup.GET("/list", handler.List)
 		routerGroup.GET("/ws", handler.ChatWS)
 	}
 }
 
-func (ch ChatHandler) SendMessage(c *gin.Context) {
-	var request requests.SendMessageRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
-		responses.ErrorResponse(c, http.StatusBadRequest, "Bad Request")
+//func (ch ChatHandler) SendMessage(c *gin.Context) {
+//	var request requests.SendMessageRequest
+//	if err := c.ShouldBindJSON(&request); err != nil {
+//		responses.ErrorResponse(c, http.StatusBadRequest, "Bad Request")
+//		return
+//	}
+//
+//	err := (*ch.chatService).SendMessage(&request)
+//	if err != nil {
+//		responses.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+//		return
+//	}
+//	responses.SuccessResponse(c, http.StatusOK, "Message sent!", nil)
+//}
+
+func (ch ChatHandler) List(c *gin.Context) {
+	var request requests.AllMessagesRequest
+	if err := c.ShouldBindQuery(&request); err != nil {
+		responses.ErrorResponse(c, http.StatusBadRequest, "Group ID is required")
 		return
 	}
-
-	err := (*ch.chatService).SendMessage(&request)
+	chats, err := (*ch.chatService).List(request.GroupId)
 	if err != nil {
 		responses.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	responses.SuccessResponse(c, http.StatusOK, "Message sent!", nil)
+	responses.SuccessResponse(c, http.StatusOK, "Fetched chats!", chats)
 }
 
 // ChatWS handles WebSocket connections for chat events
@@ -87,7 +102,7 @@ func (ch ChatHandler) ChatWS(c *gin.Context) {
 			GroupId:  &request.GroupId,
 			Message:  message,
 		}
-		err = (*ch.chatService).SendMessage(&messageRequest)
+		newChat, err := (*ch.chatService).SendMessage(&messageRequest)
 		if err != nil {
 			err := ws.WriteJSON(responses.BaseResponse{
 				Success: false,
@@ -106,7 +121,7 @@ func (ch ChatHandler) ChatWS(c *gin.Context) {
 				err := allClient.Conn.WriteJSON(responses.Response{
 					Status:  true,
 					Message: "New message received",
-					Data:    messageRequest,
+					Data:    newChat,
 				})
 				if err != nil {
 					domain.Mutex.Lock()

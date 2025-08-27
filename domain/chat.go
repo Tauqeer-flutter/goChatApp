@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"goChatApp/handler/requests"
+	requests "goChatApp/handler/requests/chat"
 	"net/http"
 	"sync"
 	"time"
@@ -30,9 +30,11 @@ type Client struct {
 }
 
 type ChatRepositoryInterface interface {
-	CreateChat(request *requests.SendMessageRequest) error
+	CreateChat(request *requests.SendMessageRequest) (*Chat, error)
+	List(groupId int64) ([]*Chat, error)
 }
 
 type ChatServiceInterface interface {
-	SendMessage(request *requests.SendMessageRequest) error
+	SendMessage(request *requests.SendMessageRequest) (*Chat, error)
+	List(groupId int64) ([]*Chat, error)
 }

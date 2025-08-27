@@ -42,18 +42,8 @@ func (u UserService) Login(email string, password string) (*domain.User, error) 
 	return user, nil
 }
 
-func (u UserService) List(userId int64) ([]*domain.User, error) {
-	users, err := u.userRepository.List()
-	if err != nil {
-		return nil, err
-	}
-	filteredUsers := make([]*domain.User, 0)
-	for _, user := range users {
-		if user.Id != userId {
-			filteredUsers = append(filteredUsers, user)
-		}
-	}
-	return users, nil
+func (u UserService) List() ([]*domain.User, error) {
+	return u.userRepository.List()
 }
 
 func (u UserService) GenerateJWT(user *domain.User) (string, error) {

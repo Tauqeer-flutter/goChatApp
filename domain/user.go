@@ -40,6 +40,6 @@ type UserRepositoryInterface interface {
 type UserServiceInterface interface {
 	SignUp(user *User) error
 	Login(email string, password string) (*User, error)
-	List(userId int64) ([]*User, error)
+	List() ([]*User, error)
 	GenerateJWT(user *User) (string, error)
 }

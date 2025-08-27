@@ -1,9 +1,8 @@
 package services
 
 import (
-	"fmt"
 	"goChatApp/domain"
-	"goChatApp/handler/requests"
+	requests "goChatApp/handler/requests/chat"
 )
 
 type ChatService struct {
@@ -12,11 +11,11 @@ type ChatService struct {
 	userRepo        domain.UserRepositoryInterface
 }
 
-func (c *ChatService) SendMessage(request *requests.SendMessageRequest) error {
+func (c *ChatService) SendMessage(request *requests.SendMessageRequest) (*domain.Chat, error) {
 	if request.GroupId != nil {
 		_, err := c.GroupRepository.GetGroupById(request.GroupId)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	} else {
 		group := domain.Group{
@@ -25,16 +24,19 @@ func (c *ChatService) SendMessage(request *requests.SendMessageRequest) error {
 		}
 		groupId, err := c.GroupRepository.Create(&group)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		request.GroupId = &groupId
 	}
-	user, err := c.userRepo.GetById(request.SenderId)
+	_, err := c.userRepo.GetById(request.SenderId)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	fmt.Println("Sender: ", user.Id, user.FirstName)
 	return c.Repository.CreateChat(request)
+}
+
+func (c *ChatService) List(groupId int64) ([]*domain.Chat, error) {
+	return c.Repository.List(groupId)
 }
 
 func NewChatService(repository domain.ChatRepositoryInterface, groupRepo domain.GroupRepositoryInterface, userRepo domain.UserRepositoryInterface) *ChatService {

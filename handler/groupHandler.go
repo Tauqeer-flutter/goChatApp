@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"goChatApp/domain"
-	"goChatApp/handler/requests"
+	"goChatApp/handler/requests/group"
 	"goChatApp/handler/responses"
 	"goChatApp/middlewares"
 	"net/http"
@@ -32,7 +32,7 @@ func SetupGroupRoutes(e *gin.RouterGroup, service domain.GroupServiceInterface) 
 }
 
 func (h GroupHandler) Create(c *gin.Context) {
-	var request requests.CreateGroupRequest
+	var request group.CreateGroupRequest
 	currentUserId, exists := c.Get("user_id")
 	if !exists {
 		responses.ErrorResponse(c, http.StatusUnauthorized, "User not found in context")

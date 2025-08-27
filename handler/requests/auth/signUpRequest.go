@@ -1,4 +1,4 @@
-package requests
+package auth
 
 type SignUpRequest struct {
 	FirstName string  `json:"first_name" binding:"required"`

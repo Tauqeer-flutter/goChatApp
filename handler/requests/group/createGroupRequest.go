@@ -1,4 +1,4 @@
-package requests
+package group
 
 type CreateGroupRequest struct {
 	Name        string `json:"name"`
