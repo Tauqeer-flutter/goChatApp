@@ -1,12 +1,13 @@
 package services
 
 import (
-	"github.com/golang-jwt/jwt/v5"
 	"goChatApp/domain"
 	"goChatApp/middlewares"
-	"golang.org/x/crypto/bcrypt"
 	"os"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -39,6 +40,20 @@ func (u UserService) Login(email string, password string) (*domain.User, error) 
 		return nil, domain.ErrInvalidCredentials
 	}
 	return user, nil
+}
+
+func (u UserService) List(userId int64) ([]*domain.User, error) {
+	users, err := u.userRepository.List()
+	if err != nil {
+		return nil, err
+	}
+	filteredUsers := make([]*domain.User, 0)
+	for _, user := range users {
+		if user.Id != userId {
+			filteredUsers = append(filteredUsers, user)
+		}
+	}
+	return users, nil
 }
 
 func (u UserService) GenerateJWT(user *domain.User) (string, error) {

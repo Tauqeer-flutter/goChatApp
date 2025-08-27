@@ -48,8 +48,12 @@ func (u userRepository) CheckUserExists(email string) (bool, error) {
 }
 
 func (u userRepository) List() ([]*domain.User, error) {
-	//TODO implement me
-	panic("implement me")
+	var users []*domain.User
+	err := u.db.Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 func (u userRepository) Delete(id string) error {

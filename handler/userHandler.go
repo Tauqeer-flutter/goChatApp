@@ -1,11 +1,13 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
 	"goChatApp/domain"
 	"goChatApp/handler/requests"
 	"goChatApp/handler/responses"
+	"goChatApp/middlewares"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type UserHandler struct {
@@ -18,6 +20,7 @@ func SetupUserRoutes(router *gin.RouterGroup, userService domain.UserServiceInte
 	{
 		group.POST("/signup", handler.SignUp)
 		group.POST("/login", handler.Login)
+		group.GET("/list", middlewares.AuthMiddleware, handler.List)
 	}
 }
 
@@ -99,6 +102,20 @@ func (h *UserHandler) Login(c *gin.Context) {
 		User:        *user,
 		AccessToken: token,
 	})
+}
+
+func (h *UserHandler) List(c *gin.Context) {
+	userId, exists := c.Get("user_id")
+	if !exists {
+		responses.ErrorResponse(c, http.StatusUnauthorized, "User not found in context")
+		return
+	}
+	users, err := h.userService.List(userId.(int64))
+	if err != nil {
+		responses.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	responses.SuccessResponse(c, http.StatusOK, "Fetched users!", users)
 }
 
 func NewUserHandler(userService domain.UserServiceInterface) *UserHandler {

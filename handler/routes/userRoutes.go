@@ -1,9 +1,10 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
 	"goChatApp/domain"
 	"goChatApp/handler"
+
+	"github.com/gin-gonic/gin"
 )
 
 func SetupUserRoutes(group *gin.RouterGroup, userService domain.UserServiceInterface) {
