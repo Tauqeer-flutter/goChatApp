@@ -61,7 +61,7 @@ func (u userRepository) Delete(id string) error {
 	panic("implement me")
 }
 
-func NewUserRepository(db *gorm.DB) *domain.UserRepositoryInterface {
+func NewUserRepository(db *gorm.DB) domain.UserRepositoryInterface {
 	return &userRepository{
 		db: db,
 	}

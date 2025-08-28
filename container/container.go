@@ -31,11 +31,11 @@ func (c *Container) SetupRoutes(router *gin.Engine) {
 func NewContainer() *Container {
 	cfg := config.LoadConfig()
 	userRepository := repositories.NewUserRepository(cfg.DB)
-	userService := services.NewUserService(userRepository)
+	userService := services.NewUserService(&userRepository)
 	groupRepository := repositories.NewGroupRepository(cfg.DB)
-	groupService := services.NewGroupService(groupRepository, userRepository)
+	groupService := services.NewGroupService(&groupRepository, &userRepository)
 	chatRepository := repositories.NewChatRepository(cfg.DB)
-	chatService := services.NewChatService(chatRepository, groupRepository, userRepository)
+	chatService := services.NewChatService(&chatRepository, &groupRepository, &userRepository)
 	mediaService := services.NewMediaService()
 	return &Container{
 		Config:       cfg,

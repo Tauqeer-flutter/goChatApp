@@ -16,6 +16,7 @@ func (cr chatRepository) CreateChat(request *requests.SendMessageRequest) (*doma
 		GroupId:     *request.GroupId,
 		Message:     request.Message,
 		SenderId:    request.SenderId,
+		FileUrl:     request.FileUrl,
 		ReferenceTo: &request.References,
 	}
 	err := cr.DB.Create(chat).Error
@@ -34,7 +35,7 @@ func (cr chatRepository) List(groupId int64) ([]*domain.Chat, error) {
 	return chats, nil
 }
 
-func NewChatRepository(db *gorm.DB) *domain.ChatRepositoryInterface {
+func NewChatRepository(db *gorm.DB) domain.ChatRepositoryInterface {
 	return &chatRepository{
 		DB: db,
 	}

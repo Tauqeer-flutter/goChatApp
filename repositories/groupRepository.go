@@ -54,7 +54,7 @@ func (g groupRepository) GetGroupById(groupId *int64) (*domain.Group, error) {
 	return &group, nil
 }
 
-func NewGroupRepository(db *gorm.DB) *domain.GroupRepositoryInterface {
+func NewGroupRepository(db *gorm.DB) domain.GroupRepositoryInterface {
 	return &groupRepository{
 		Db: db,
 	}

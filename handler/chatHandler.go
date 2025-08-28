@@ -61,13 +61,13 @@ func (ch ChatHandler) ChatWS(c *gin.Context) {
 		responses.ErrorResponse(c, http.StatusUnauthorized, "User not found in context")
 		return
 	}
-	var request requests.ChatWebsocketRequest
+	var request requests.GroupIdRequest
 	if err := c.ShouldBindQuery(&request); err != nil {
 		responses.ErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	service := (*ch.chatService).(*services.ChatService)
-	_, err := service.GroupRepository.GetGroupById(&request.GroupId)
+	_, err := (*service.GroupRepository).GetGroupById(&request.GroupId)
 	if err != nil {
 		responses.ErrorResponse(c, http.StatusBadRequest, "Group not found")
 		return
@@ -87,19 +87,20 @@ func (ch ChatHandler) ChatWS(c *gin.Context) {
 	domain.Clients[&client] = request.GroupId
 	domain.Mutex.Unlock()
 	for {
-		_, bytes, err := ws.ReadMessage()
+		var request requests.ReceiveMessageRequest
+		err := ws.ReadJSON(&request)
 		if err != nil {
 			domain.Mutex.Lock()
 			delete(domain.Clients, &client)
 			domain.Mutex.Unlock()
 			break
 		}
-		message := string(bytes)
-		fmt.Println(message)
+		fmt.Println(request.Message)
 		messageRequest := requests.SendMessageRequest{
 			SenderId: userId.(int64),
 			GroupId:  &request.GroupId,
-			Message:  message,
+			Message:  request.Message,
+			FileUrl:  request.FileUrl,
 		}
 		newChat, err := (*ch.chatService).SendMessage(&messageRequest)
 		if err != nil {
