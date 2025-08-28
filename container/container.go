@@ -15,6 +15,7 @@ type Container struct {
 	UserService  domain.UserServiceInterface
 	GroupService domain.GroupServiceInterface
 	ChatService  domain.ChatServiceInterface
+	MediaService domain.MediaServiceInterface
 }
 
 func (c *Container) SetupRoutes(router *gin.Engine) {
@@ -23,6 +24,7 @@ func (c *Container) SetupRoutes(router *gin.Engine) {
 		routes.SetupUserRoutes(group, c.UserService)
 		routes.SetupGroupRoutes(group, c.GroupService)
 		routes.SetupChatRoutes(group, &c.ChatService)
+		routes.SetupMediaRoutes(group, &c.MediaService)
 	}
 }
 
@@ -34,10 +36,12 @@ func NewContainer() *Container {
 	groupService := services.NewGroupService(groupRepository, userRepository)
 	chatRepository := repositories.NewChatRepository(cfg.DB)
 	chatService := services.NewChatService(chatRepository, groupRepository, userRepository)
+	mediaService := services.NewMediaService()
 	return &Container{
 		Config:       cfg,
 		UserService:  userService,
 		GroupService: groupService,
 		ChatService:  chatService,
+		MediaService: mediaService,
 	}
 }

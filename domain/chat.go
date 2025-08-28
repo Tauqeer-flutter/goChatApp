@@ -15,6 +15,7 @@ type Chat struct {
 	Message     string    `json:"message"`
 	SenderId    int64     `json:"sender_id"`
 	ReferenceTo *int64    `json:"reference_to"`
+	FileUrl     *string   `json:"file_url"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

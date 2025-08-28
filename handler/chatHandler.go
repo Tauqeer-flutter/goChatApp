@@ -42,7 +42,7 @@ func SetupChatRoutes(router *gin.RouterGroup, service *domain.ChatServiceInterfa
 //}
 
 func (ch ChatHandler) List(c *gin.Context) {
-	var request requests.AllMessagesRequest
+	var request requests.GroupIdRequest
 	if err := c.ShouldBindQuery(&request); err != nil {
 		responses.ErrorResponse(c, http.StatusBadRequest, "Group ID is required")
 		return
@@ -55,7 +55,6 @@ func (ch ChatHandler) List(c *gin.Context) {
 	responses.SuccessResponse(c, http.StatusOK, "Fetched chats!", chats)
 }
 
-// ChatWS handles WebSocket connections for chat events
 func (ch ChatHandler) ChatWS(c *gin.Context) {
 	userId, exists := c.Get("user_id")
 	if !exists {
