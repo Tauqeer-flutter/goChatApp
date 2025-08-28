@@ -16,13 +16,14 @@ type MediaHandler struct {
 
 func SetupMediaRoutes(router *gin.RouterGroup, service *domain.MediaServiceInterface) {
 	handler := NewMediaHandler(service)
-	routerGroup := router.Group("/media", middlewares.AuthMiddleware)
+	routerGroup := router.Group("/media")
 	{
-		routerGroup.POST("/upload", handler.Upload)
+		routerGroup.POST("/upload-chat-file", middlewares.AuthMiddleware, handler.UploadChatFile)
+		routerGroup.GET("/:groupId/:filename", handler.GetChatFile)
 	}
 }
 
-func (ch *MediaHandler) Upload(c *gin.Context) {
+func (ch *MediaHandler) UploadChatFile(c *gin.Context) {
 	var request requests.GroupIdRequest
 	if err := c.ShouldBind(&request); err != nil {
 		responses.ErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -39,6 +40,21 @@ func (ch *MediaHandler) Upload(c *gin.Context) {
 		return
 	}
 	responses.SuccessResponse(c, http.StatusOK, "File uploaded", filename)
+}
+
+func (ch *MediaHandler) GetChatFile(c *gin.Context) {
+	filename := c.Params.ByName("filename")
+	if filename == "" {
+		responses.ErrorResponse(c, http.StatusBadRequest, "Filename is required")
+		return
+	}
+	groupId := c.Params.ByName("groupId")
+	if groupId == "" {
+		responses.ErrorResponse(c, http.StatusBadRequest, "Group ID is required")
+		return
+	}
+	path := "uploads/chats/" + groupId + "/" + filename
+	c.File(path)
 }
 
 func NewMediaHandler(service *domain.MediaServiceInterface) *MediaHandler {
