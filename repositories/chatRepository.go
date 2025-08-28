@@ -34,7 +34,7 @@ func (cr chatRepository) List(groupId int64) ([]*domain.Chat, error) {
 	return chats, nil
 }
 
-func NewChatRepository(db *gorm.DB) *chatRepository {
+func NewChatRepository(db *gorm.DB) *domain.ChatRepositoryInterface {
 	return &chatRepository{
 		DB: db,
 	}

@@ -11,11 +11,11 @@ import (
 )
 
 type UserService struct {
-	userRepository domain.UserRepositoryInterface
+	userRepository *domain.UserRepositoryInterface
 }
 
-func (u UserService) SignUp(user *domain.User) error {
-	exists, err := u.userRepository.CheckUserExists(user.Email)
+func (u *UserService) SignUp(user *domain.User) error {
+	exists, err := (*u.userRepository).CheckUserExists(user.Email)
 	if err != nil || exists {
 		return domain.ErrUserAlreadyExists
 	}
@@ -24,15 +24,15 @@ func (u UserService) SignUp(user *domain.User) error {
 		return err
 	}
 	user.Password = string(hash)
-	err = u.userRepository.Create(user)
+	err = (*u.userRepository).Create(user)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u UserService) Login(email string, password string) (*domain.User, error) {
-	user, err := u.userRepository.GetByEmail(email)
+func (u *UserService) Login(email string, password string) (*domain.User, error) {
+	user, err := (*u.userRepository).GetByEmail(email)
 	if err != nil || user == nil {
 		return nil, domain.ErrInvalidCredentials
 	}
@@ -42,11 +42,11 @@ func (u UserService) Login(email string, password string) (*domain.User, error) 
 	return user, nil
 }
 
-func (u UserService) List() ([]*domain.User, error) {
-	return u.userRepository.List()
+func (u *UserService) List() ([]*domain.User, error) {
+	return (*u.userRepository).List()
 }
 
-func (u UserService) GenerateJWT(user *domain.User) (string, error) {
+func (u *UserService) GenerateJWT(user *domain.User) (string, error) {
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 	claims := middlewares.JWTClaims{
 		UserId:  user.Id,
@@ -62,8 +62,8 @@ func (u UserService) GenerateJWT(user *domain.User) (string, error) {
 	return tokenString, nil
 }
 
-func NewUserService(userRepository domain.UserRepositoryInterface) domain.UserServiceInterface {
-	return UserService{
+func NewUserService(userRepository *domain.UserRepositoryInterface) domain.UserServiceInterface {
+	return &UserService{
 		userRepository: userRepository,
 	}
 }
