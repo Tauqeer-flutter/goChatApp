@@ -18,7 +18,11 @@ type Member struct {
 	GroupId   int64     `json:"group_id"`
 	CreatedAt time.Time `json:"created_at" gorm:"not null"`
 	UpdatedAt time.Time `json:"updated_at" gorm:"not null"`
-	User      User      `gorm:"foreignKey:MemberId" json:"-"`
+	FirstName string    `json:"first_name" gorm:"->;column:first_name;-:migration"`
+	LastName  string    `json:"last_name" gorm:"->;column:last_name;-:migration"`
+	Email     string    `json:"email" gorm:"->;column:email;-:migration"`
+	PhotoUrl  *string   `json:"photo_url" gorm:"->;column:photo_url;-:migration"`
+	Phone     *string   `json:"phone" gorm:"->;column:phone;-:migration"`
 }
 
 //type

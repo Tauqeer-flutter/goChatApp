@@ -87,22 +87,23 @@ func (ch ChatHandler) ChatWS(c *gin.Context) {
 	domain.Clients[&client] = request.GroupId
 	domain.Mutex.Unlock()
 	for {
-		var request requests.ReceiveMessageRequest
-		err := ws.ReadJSON(&request)
+		fmt.Println("Waiting for message")
+		var messageRequest requests.ReceiveMessageRequest
+		err := ws.ReadJSON(&messageRequest)
 		if err != nil {
 			domain.Mutex.Lock()
 			delete(domain.Clients, &client)
 			domain.Mutex.Unlock()
 			break
 		}
-		fmt.Println(request.Message)
-		messageRequest := requests.SendMessageRequest{
+		fmt.Println(messageRequest.Message)
+		newMessageRequest := requests.SendMessageRequest{
 			SenderId: userId.(int64),
 			GroupId:  &request.GroupId,
-			Message:  request.Message,
-			FileUrl:  request.FileUrl,
+			Message:  messageRequest.Message,
+			FileUrl:  messageRequest.FileUrl,
 		}
-		newChat, err := (*ch.chatService).SendMessage(&messageRequest)
+		newChat, err := (*ch.chatService).SendMessage(&newMessageRequest)
 		if err != nil {
 			err := ws.WriteJSON(responses.BaseResponse{
 				Success: false,

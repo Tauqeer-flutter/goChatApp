@@ -30,7 +30,7 @@ func (g groupRepository) List(userId int64) ([]*domain.Group, error) {
 	for _, group := range groups {
 		id := group.Id
 		fmt.Println("id: ", id)
-		err = g.Db.Table("members").Where("group_id = ?;", group.Id).Scan(&members).Error
+		err = g.Db.Raw("SELECT u.* FROM go_chat_app.members m JOIN go_chat_app.users u ON m.member_id = u.id WHERE m.group_id = ?;", id).Scan(&members).Error
 		if err != nil {
 			fmt.Println("Error fetching members for group: ", id, err)
 			continue
